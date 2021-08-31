@@ -185,7 +185,7 @@ void InitRnet(struct Rnet* rnet)
 	InitpRelu(rnet->prelu1, 28);
 	long conv2_out = InitConvAndFc(rnet->conv2_wb, 48, 28, 3, 1, 0);
 	InitpRelu(rnet->prelu2, 48);
-	long conv3_out = InitConvAndFc(rnet->conv3_wb, 64, 48, 2, 1, 0);
+	long conv3_out = InitConvAndFc(rnet->conv3_wb, 64, 48, 3, 1, 0);
 	InitpRelu(rnet->prelu3, 64);
 	long fc4 = InitConvAndFc(rnet->fc4_wb, 128, 576, 1, 1, 0);
 	InitpRelu(rnet->prelu4, 128);
@@ -205,10 +205,10 @@ void InitRnet(struct Rnet* rnet)
 	RnetImage2MatrixInit(rnet->rgb);
 	Im2colInit(rnet->rgb, rnet->conv1_matrix, rnet->conv1_wb);
 	ConvolutionInit(rnet->conv1_wb, rnet->rgb, rnet->conv1_out, rnet->conv1_matrix);
-	MaxPoolingInit(rnet->conv1_out, rnet->pooling1_out, 3, 2);
+	MaxPoolingInit(rnet->conv1_out, rnet->pooling1_out, 2, 2);
 	Im2colInit(rnet->pooling1_out, rnet->conv2_matrix, rnet->conv2_wb);
 	ConvolutionInit(rnet->conv2_wb, rnet->pooling1_out, rnet->conv2_out, rnet->conv2_matrix);
-	MaxPoolingInit(rnet->conv2_out, rnet->pooling2_out, 3, 2);
+	MaxPoolingInit(rnet->conv2_out, rnet->pooling2_out, 2, 2);
 	Im2colInit(rnet->pooling2_out, rnet->conv3_matrix, rnet->conv3_wb);
 	ConvolutionInit(rnet->conv3_wb, rnet->pooling2_out, rnet->conv3_out, rnet->conv3_matrix);
 	FullconnectInit(rnet->fc4_wb, rnet->fc4_out);
