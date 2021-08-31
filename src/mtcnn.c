@@ -1,5 +1,6 @@
 #include "mtcnn.h"
 #include "math.h"
+#include <stdio.h>
 
 void InitPnet(struct Pnet* pnet)
 {
@@ -41,15 +42,15 @@ void InitPnet(struct Pnet* pnet)
 	pnet->conv4c1_wb = (struct Weight*)malloc(sizeof(struct Weight));
 	pnet->conv4c2_wb = (struct Weight*)malloc(sizeof(struct Weight));
 
-	long conv1_out = InitConvAndFc(pnet->conv1_wb, 10, 3, 3, 1, 0);
+	long conv1_out = InitConvAndFc(pnet->conv1_wb, 8, 3, 3, 1, 0);
 	InitpRelu(pnet->prelu1, 10);
-	long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 10, 3, 1, 0);
+	long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 8, 3, 1, 0);
 	InitpRelu(pnet->prelu2, 16);
 	long conv3_out = InitConvAndFc(pnet->conv3_wb, 32, 16, 3, 1, 0);
 	InitpRelu(pnet->prelu3, 32);
 	long conv4c1 = InitConvAndFc(pnet->conv4c1_wb, 2, 32, 1, 1, 0);
 	long conv4c2 = InitConvAndFc(pnet->conv4c2_wb, 4, 32, 1, 1, 0);
-	long dataNumber[13] = { conv1_out,10,10, conv2_out,16,16, conv3_out,32,32, conv4c1,2, conv4c2,4 };
+	long dataNumber[13] = { conv1_out,8,8, conv2_out,16,16, conv3_out,32,32, conv4c1,2, conv4c2,4 };
 	float* pointTeam[13] = { pnet->conv1_wb->pdata, pnet->conv1_wb->pbias, pnet->prelu1->pdata,
 							pnet->conv2_wb->pdata, pnet->conv2_wb->pbias, pnet->prelu2->pdata,
 							pnet->conv3_wb->pdata, pnet->conv3_wb->pbias, pnet->prelu3->pdata,
@@ -466,6 +467,11 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 		vector_Bbox_clear(&mtcnn->simpleFace[i].boundingBox);
 		vector_orderScore_clear(&mtcnn->simpleFace[i].bboxScore);
 	}
+	for(int i=0; i<270; i++)
+		printf("%d: %f\n", i, mtcnn->simpleFace->conv1_wb->pdata[i]);
+
+	for(int i=0; i<sizeof(mtcnn->simpleFace->conv2_wb->pdata)/sizeof(float); i++)
+		printf("%d: %f\n", i+2, mtcnn->simpleFace->conv2_wb->pdata[i]);
 
 	//the first stage's Nms
 	if (count < 1) return;
