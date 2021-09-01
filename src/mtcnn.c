@@ -1,6 +1,5 @@
 #include "mtcnn.h"
 #include "math.h"
-#include <stdio.h>
 
 void InitPnet(struct Pnet* pnet)
 {
@@ -42,15 +41,15 @@ void InitPnet(struct Pnet* pnet)
 	pnet->conv4c1_wb = (struct Weight*)malloc(sizeof(struct Weight));
 	pnet->conv4c2_wb = (struct Weight*)malloc(sizeof(struct Weight));
 
-	long conv1_out = InitConvAndFc(pnet->conv1_wb, 8, 3, 3, 1, 0);
+	long conv1_out = InitConvAndFc(pnet->conv1_wb, 10, 3, 3, 1, 0);
 	InitpRelu(pnet->prelu1, 10);
-	long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 8, 3, 1, 0);
+	long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 10, 3, 1, 0);
 	InitpRelu(pnet->prelu2, 16);
 	long conv3_out = InitConvAndFc(pnet->conv3_wb, 32, 16, 3, 1, 0);
 	InitpRelu(pnet->prelu3, 32);
 	long conv4c1 = InitConvAndFc(pnet->conv4c1_wb, 2, 32, 1, 1, 0);
 	long conv4c2 = InitConvAndFc(pnet->conv4c2_wb, 4, 32, 1, 1, 0);
-	long dataNumber[13] = { conv1_out,8,8, conv2_out,16,16, conv3_out,32,32, conv4c1,2, conv4c2,4 };
+	long dataNumber[13] = { conv1_out,10,10, conv2_out,16,16, conv3_out,32,32, conv4c1,2, conv4c2,4 };
 	float* pointTeam[13] = { pnet->conv1_wb->pdata, pnet->conv1_wb->pbias, pnet->prelu1->pdata,
 							pnet->conv2_wb->pdata, pnet->conv2_wb->pbias, pnet->prelu2->pdata,
 							pnet->conv3_wb->pdata, pnet->conv3_wb->pbias, pnet->prelu3->pdata,
@@ -185,7 +184,7 @@ void InitRnet(struct Rnet* rnet)
 	InitpRelu(rnet->prelu1, 28);
 	long conv2_out = InitConvAndFc(rnet->conv2_wb, 48, 28, 3, 1, 0);
 	InitpRelu(rnet->prelu2, 48);
-	long conv3_out = InitConvAndFc(rnet->conv3_wb, 64, 48, 3, 1, 0);
+	long conv3_out = InitConvAndFc(rnet->conv3_wb, 64, 48, 2, 1, 0);
 	InitpRelu(rnet->prelu3, 64);
 	long fc4 = InitConvAndFc(rnet->fc4_wb, 128, 576, 1, 1, 0);
 	InitpRelu(rnet->prelu4, 128);
@@ -205,10 +204,10 @@ void InitRnet(struct Rnet* rnet)
 	RnetImage2MatrixInit(rnet->rgb);
 	Im2colInit(rnet->rgb, rnet->conv1_matrix, rnet->conv1_wb);
 	ConvolutionInit(rnet->conv1_wb, rnet->rgb, rnet->conv1_out, rnet->conv1_matrix);
-	MaxPoolingInit(rnet->conv1_out, rnet->pooling1_out, 2, 2);
+	MaxPoolingInit(rnet->conv1_out, rnet->pooling1_out, 3, 2);
 	Im2colInit(rnet->pooling1_out, rnet->conv2_matrix, rnet->conv2_wb);
 	ConvolutionInit(rnet->conv2_wb, rnet->pooling1_out, rnet->conv2_out, rnet->conv2_matrix);
-	MaxPoolingInit(rnet->conv2_out, rnet->pooling2_out, 2, 2);
+	MaxPoolingInit(rnet->conv2_out, rnet->pooling2_out, 3, 2);
 	Im2colInit(rnet->pooling2_out, rnet->conv3_matrix, rnet->conv3_wb);
 	ConvolutionInit(rnet->conv3_wb, rnet->pooling2_out, rnet->conv3_out, rnet->conv3_matrix);
 	FullconnectInit(rnet->fc4_wb, rnet->fc4_out);
@@ -467,11 +466,6 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 		vector_Bbox_clear(&mtcnn->simpleFace[i].boundingBox);
 		vector_orderScore_clear(&mtcnn->simpleFace[i].bboxScore);
 	}
-	for(int i=0; i<270; i++)
-		printf("%d: %f\n", i, mtcnn->simpleFace->conv1_wb->pdata[i]);
-
-	for(int i=0; i<sizeof(mtcnn->simpleFace->conv2_wb->pdata)/sizeof(float); i++)
-		printf("%d: %f\n", i+2, mtcnn->simpleFace->conv2_wb->pdata[i]);
 
 	//the first stage's Nms
 	if (count < 1) return;
