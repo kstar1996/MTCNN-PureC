@@ -1,5 +1,9 @@
 #include "cv.h"
 
+// 1. MTCNN preprocessing needs to resize the image to different scales, and then get all the bounding boxes through P-NET.
+//         Since P-NET is a convolutional network, it can support input images of any scale. But in our case the code
+//         requires 3 fixed input scales.
+
 void CutPicture(struct Img* src, struct Img* Dst, struct Rect rec)
 {
 	Dst->cols = rec.width;
@@ -29,6 +33,7 @@ void RectInit(struct Rect* rec, int x, int y, int width, int height)
 	rec->width = width;
 	rec->height = height;
 }
+
 
 void Resize(struct Img* src, struct Img* dst, int changedW, int changedH)
 {
