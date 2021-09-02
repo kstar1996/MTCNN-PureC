@@ -1,223 +1,234 @@
 #include "mtcnn.h"
 #include "math.h"
+#include <stdio.h>
 
-void InitPnet(struct Pnet* pnet)
-{
-	pnet->Pthreshold = 0.6;
-	pnet->nms_threshold = 0.5;
-	pnet->firstFlag = 1;
-	pnet->rgb = (struct Mat*)malloc(sizeof(struct Mat));
+void InitPnet(struct Pnet *pnet) {
+    pnet->Pthreshold = 0.6;
+    pnet->nms_threshold = 0.5;
+    pnet->firstFlag = 1;
+    pnet->rgb = (struct Mat *) malloc(sizeof(struct Mat));
 
-	pnet->bboxScore.data = (struct orderScore*)malloc(sizeof(struct orderScore));
-	pnet->bboxScore.memory = 1;
-	pnet->bboxScore.size = 0;
+    pnet->bboxScore.data = (struct orderScore *) malloc(sizeof(struct orderScore));
+    pnet->bboxScore.memory = 1;
+    pnet->bboxScore.size = 0;
 
-	pnet->boundingBox.data = (struct Bbox*)malloc(sizeof(struct Bbox));
-	pnet->boundingBox.memory = 1;
-	pnet->boundingBox.size = 0;
+    pnet->boundingBox.data = (struct Bbox *) malloc(sizeof(struct Bbox));
+    pnet->boundingBox.memory = 1;
+    pnet->boundingBox.size = 0;
 
-	pnet->conv1_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	pnet->conv1_out = (struct Mat*)malloc(sizeof(struct Mat));
-	pnet->maxPooling1 = (struct Mat*)malloc(sizeof(struct Mat));
+    pnet->conv1_matrix = (struct Mat *) malloc(sizeof(struct Mat));
+    pnet->conv1_out = (struct Mat *) malloc(sizeof(struct Mat));
+    pnet->maxPooling1 = (struct Mat *) malloc(sizeof(struct Mat));
 
-	pnet->maxPooling_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	pnet->conv2_out = (struct Mat*)malloc(sizeof(struct Mat));
+    pnet->maxPooling_matrix = (struct Mat *) malloc(sizeof(struct Mat));
+    pnet->conv2_out = (struct Mat *) malloc(sizeof(struct Mat));
 
-	pnet->conv3_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	pnet->conv3_out = (struct Mat*)malloc(sizeof(struct Mat));
+    pnet->conv3_matrix = (struct Mat *) malloc(sizeof(struct Mat));
+    pnet->conv3_out = (struct Mat *) malloc(sizeof(struct Mat));
 
-	pnet->score_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	pnet->score = (struct Mat*)malloc(sizeof(struct Mat));
+    pnet->score_matrix = (struct Mat *) malloc(sizeof(struct Mat));
+    pnet->score = (struct Mat *) malloc(sizeof(struct Mat));
 
-	pnet->location_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	pnet->location = (struct Mat*)malloc(sizeof(struct Mat));
+    pnet->location_matrix = (struct Mat *) malloc(sizeof(struct Mat));
+    pnet->location = (struct Mat *) malloc(sizeof(struct Mat));
 
-	pnet->conv1_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	pnet->prelu1 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	pnet->conv2_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	pnet->prelu2 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	pnet->conv3_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	pnet->prelu3 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	pnet->conv4c1_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	pnet->conv4c2_wb = (struct Weight*)malloc(sizeof(struct Weight));
+    pnet->conv1_wb = (struct Weight *) malloc(sizeof(struct Weight));
+    pnet->prelu1 = (struct pRelu *) malloc(sizeof(struct pRelu));
+    pnet->conv2_wb = (struct Weight *) malloc(sizeof(struct Weight));
+    pnet->prelu2 = (struct pRelu *) malloc(sizeof(struct pRelu));
+    pnet->conv3_wb = (struct Weight *) malloc(sizeof(struct Weight));
+    pnet->prelu3 = (struct pRelu *) malloc(sizeof(struct pRelu));
+    pnet->conv4c1_wb = (struct Weight *) malloc(sizeof(struct Weight));
+    pnet->conv4c2_wb = (struct Weight *) malloc(sizeof(struct Weight));
 
-	long conv1_out = InitConvAndFc(pnet->conv1_wb, 10, 3, 3, 1, 0);
-	InitpRelu(pnet->prelu1, 10);
-	long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 10, 3, 1, 0);
-	InitpRelu(pnet->prelu2, 16);
-	long conv3_out = InitConvAndFc(pnet->conv3_wb, 32, 16, 3, 1, 0);
-	InitpRelu(pnet->prelu3, 32);
-	long conv4c1 = InitConvAndFc(pnet->conv4c1_wb, 2, 32, 1, 1, 0);
-	long conv4c2 = InitConvAndFc(pnet->conv4c2_wb, 4, 32, 1, 1, 0);
-	long dataNumber[13] = { conv1_out,10,10, conv2_out,16,16, conv3_out,32,32, conv4c1,2, conv4c2,4 };
-	float* pointTeam[13] = { pnet->conv1_wb->pdata, pnet->conv1_wb->pbias, pnet->prelu1->pdata,
-							pnet->conv2_wb->pdata, pnet->conv2_wb->pbias, pnet->prelu2->pdata,
-							pnet->conv3_wb->pdata, pnet->conv3_wb->pbias, pnet->prelu3->pdata,
-							pnet->conv4c1_wb->pdata, pnet->conv4c1_wb->pbias,
-							pnet->conv4c2_wb->pdata, pnet->conv4c2_wb->pbias
-	};
+    long conv1_out = InitConvAndFc(pnet->conv1_wb, 10, 3, 3, 1, 0);
+    InitpRelu(pnet->prelu1, 10);
+    long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 10, 3, 1, 0);
+    InitpRelu(pnet->prelu2, 16);
+    long conv3_out = InitConvAndFc(pnet->conv3_wb, 32, 16, 3, 1, 0);
+    InitpRelu(pnet->prelu3, 32);
+    long conv4c1 = InitConvAndFc(pnet->conv4c1_wb, 2, 32, 1, 1, 0);
+    long conv4c2 = InitConvAndFc(pnet->conv4c2_wb, 4, 32, 1, 1, 0);
+    long dataNumber[13] = {conv1_out, 10, 10, conv2_out, 16,
+                           16, conv3_out, 32, 32, conv4c1,
+                           2, conv4c2, 4};
+    float *pointTeam[13] = {
+            pnet->conv1_wb->pdata, pnet->conv1_wb->pbias, pnet->prelu1->pdata,
+            pnet->conv2_wb->pdata, pnet->conv2_wb->pbias, pnet->prelu2->pdata,
+            pnet->conv3_wb->pdata, pnet->conv3_wb->pbias, pnet->prelu3->pdata,
+            pnet->conv4c1_wb->pdata, pnet->conv4c1_wb->pbias, pnet->conv4c2_wb->pdata,
+            pnet->conv4c2_wb->pbias};
 
-	char filename[9] = "Pnet.txt";
-	ReadData(filename, dataNumber, pointTeam);
+    char filename[9] = "Pnet.txt";
+    ReadData(filename, dataNumber, pointTeam);
 }
 
-void RunPnet(struct Img* image, float scale, struct Pnet* pnet)
-{
-	if (pnet->firstFlag)
-	{
-		Image2MatrixInit(image, pnet->rgb);
 
-		Im2colInit(pnet->rgb, pnet->conv1_matrix, pnet->conv1_wb);
-		ConvolutionInit(pnet->conv1_wb, pnet->rgb, pnet->conv1_out, pnet->conv1_matrix);
+void RunPnet(struct Img *image, float scale, struct Pnet *pnet) {
+    if (pnet->firstFlag) {
+        Image2MatrixInit(image, pnet->rgb);
 
-		MaxPoolingInit(pnet->conv1_out, pnet->maxPooling1, 2, 2);
-		Im2colInit(pnet->maxPooling1, pnet->maxPooling_matrix, pnet->conv2_wb);
-		ConvolutionInit(pnet->conv2_wb, pnet->maxPooling1, pnet->conv2_out, pnet->maxPooling_matrix);
+        Im2colInit(pnet->rgb, pnet->conv1_matrix, pnet->conv1_wb);
+        ConvolutionInit(pnet->conv1_wb, pnet->rgb, pnet->conv1_out,
+                        pnet->conv1_matrix);
 
-		Im2colInit(pnet->conv2_out, pnet->conv3_matrix, pnet->conv3_wb);
-		ConvolutionInit(pnet->conv3_wb, pnet->conv2_out, pnet->conv3_out, pnet->conv3_matrix);
+        MaxPoolingInit(pnet->conv1_out, pnet->maxPooling1, 2, 2);
+        Im2colInit(pnet->maxPooling1, pnet->maxPooling_matrix, pnet->conv2_wb);
+        ConvolutionInit(pnet->conv2_wb, pnet->maxPooling1, pnet->conv2_out,
+                        pnet->maxPooling_matrix);
 
-		Im2colInit(pnet->conv3_out, pnet->score_matrix, pnet->conv4c1_wb);
-		ConvolutionInit(pnet->conv4c1_wb, pnet->conv3_out, pnet->score, pnet->score_matrix);
+        Im2colInit(pnet->conv2_out, pnet->conv3_matrix, pnet->conv3_wb);
+        ConvolutionInit(pnet->conv3_wb, pnet->conv2_out, pnet->conv3_out,
+                        pnet->conv3_matrix);
 
-		Im2colInit(pnet->conv3_out, pnet->location_matrix, pnet->conv4c2_wb);
-		ConvolutionInit(pnet->conv4c2_wb, pnet->conv3_out, pnet->location, pnet->location_matrix);
-		pnet->firstFlag = 0;
-	}
+        Im2colInit(pnet->conv3_out, pnet->score_matrix, pnet->conv4c1_wb);
+        ConvolutionInit(pnet->conv4c1_wb, pnet->conv3_out, pnet->score,
+                        pnet->score_matrix);
 
-	Image2Matrix(image, pnet->rgb);
-	Im2col(pnet->rgb, pnet->conv1_matrix, pnet->conv1_wb);
-	Convolution(pnet->conv1_wb, pnet->rgb, pnet->conv1_out, pnet->conv1_matrix);
-	PRelu(pnet->conv1_out, pnet->conv1_wb->pbias, pnet->prelu1->pdata);
-	MaxPooling(pnet->conv1_out, pnet->maxPooling1, 2, 2);
+        Im2colInit(pnet->conv3_out, pnet->location_matrix, pnet->conv4c2_wb);
+        ConvolutionInit(pnet->conv4c2_wb, pnet->conv3_out, pnet->location,
+                        pnet->location_matrix);
+        pnet->firstFlag = 0;
+    }
 
-	Im2col(pnet->maxPooling1, pnet->maxPooling_matrix, pnet->conv2_wb);
-	Convolution(pnet->conv2_wb, pnet->maxPooling1, pnet->conv2_out, pnet->maxPooling_matrix);
-	PRelu(pnet->conv2_out, pnet->conv2_wb->pbias, pnet->prelu2->pdata);
+    Image2Matrix(image, pnet->rgb);
+    Im2col(pnet->rgb, pnet->conv1_matrix, pnet->conv1_wb);
+    Convolution(pnet->conv1_wb, pnet->rgb, pnet->conv1_out, pnet->conv1_matrix);
+    PRelu(pnet->conv1_out, pnet->conv1_wb->pbias, pnet->prelu1->pdata);
+    MaxPooling(pnet->conv1_out, pnet->maxPooling1, 2, 2);
 
-	Im2col(pnet->conv2_out, pnet->conv3_matrix, pnet->conv3_wb);
-	Convolution(pnet->conv3_wb, pnet->conv2_out, pnet->conv3_out, pnet->conv3_matrix);
-	PRelu(pnet->conv3_out, pnet->conv3_wb->pbias, pnet->prelu3->pdata);
+    Im2col(pnet->maxPooling1, pnet->maxPooling_matrix, pnet->conv2_wb);
+    Convolution(pnet->conv2_wb, pnet->maxPooling1, pnet->conv2_out,
+                pnet->maxPooling_matrix);
+    PRelu(pnet->conv2_out, pnet->conv2_wb->pbias, pnet->prelu2->pdata);
 
-	Im2col(pnet->conv3_out, pnet->score_matrix, pnet->conv4c1_wb);
-	Convolution(pnet->conv4c1_wb, pnet->conv3_out, pnet->score, pnet->score_matrix);
-	AddBias(pnet->score, pnet->conv4c1_wb->pbias);
-	Softmax(pnet->score);
+    Im2col(pnet->conv2_out, pnet->conv3_matrix, pnet->conv3_wb);
+    Convolution(pnet->conv3_wb, pnet->conv2_out, pnet->conv3_out,
+                pnet->conv3_matrix);
+    PRelu(pnet->conv3_out, pnet->conv3_wb->pbias, pnet->prelu3->pdata);
 
-	Im2col(pnet->conv3_out, pnet->location_matrix, pnet->conv4c2_wb);
-	Convolution(pnet->conv4c2_wb, pnet->conv3_out, pnet->location, pnet->location_matrix);
-	AddBias(pnet->location, pnet->conv4c2_wb->pbias);
+    Im2col(pnet->conv3_out, pnet->score_matrix, pnet->conv4c1_wb);
+    Convolution(pnet->conv4c1_wb, pnet->conv3_out, pnet->score,
+                pnet->score_matrix);
+    AddBias(pnet->score, pnet->conv4c1_wb->pbias);
+    Softmax(pnet->score);
 
-	GenerateBbox(pnet->score, pnet->location, scale, pnet);
+    Im2col(pnet->conv3_out, pnet->location_matrix, pnet->conv4c2_wb);
+    Convolution(pnet->conv4c2_wb, pnet->conv3_out, pnet->location,
+                pnet->location_matrix);
+    AddBias(pnet->location, pnet->conv4c2_wb->pbias);
+
+    GenerateBbox(pnet->score, pnet->location, scale, pnet);
 }
 
-void GenerateBbox(struct Mat* score, struct Mat* location, float scale, struct Pnet* pnet)
-{
-	int stride = 2;
-	int cellsize = 12;
-	int count = 0;
+void GenerateBbox(struct Mat *score, struct Mat *location, float scale,
+                  struct Pnet *pnet) {
+    int stride = 2;
+    int cellsize = 12;
+    int count = 0;
 
-	float* p = score->mat.pData + score->mat.numCols * score->mat.numRows;
-	float* plocal = location->mat.pData;
-	struct Bbox bbox;
-	struct orderScore order;
-	for (size_t row = 0; row < score->mat.numRows; row++)
-	{
-		for (size_t col = 0; col < score->mat.numCols; col++)
-		{
-			if (*p > pnet->Pthreshold)
-			{
-				bbox.score = *p;
-				order.score = *p;
-				order.oriOrder = count;
-				bbox.x1 = roundf((stride * row + 1) / scale);
-				bbox.y1 = roundf((stride * col + 1) / scale);
-				bbox.x2 = roundf((stride * row + 1 + cellsize) / scale);
-				bbox.y2 = roundf((stride * col + 1 + cellsize) / scale);
-				bbox.exist = 1;
-				bbox.area = (bbox.x2 - bbox.x1) * (bbox.y2 - bbox.y1);
-				for (size_t channel = 0; channel < 4; channel++)
-					bbox.regreCoord[channel] = *(plocal + channel * location->mat.numCols * location->mat.numRows);
-				vector_Bbox_push_back(&pnet->boundingBox, bbox);
-				vector_orderScore_push_back(&pnet->bboxScore, order);
-				count++;
-			}
-			p++;
-			plocal++;
-		}
-	}
+    float *p = score->mat.pData + score->mat.numCols * score->mat.numRows;
+    float *plocal = location->mat.pData;
+    struct Bbox bbox;
+    struct orderScore order;
+    for (size_t row = 0; row < score->mat.numRows; row++) {
+        for (size_t col = 0; col < score->mat.numCols; col++) {
+            if (*p > pnet->Pthreshold) {
+                bbox.score = *p;
+                order.score = *p;
+                order.oriOrder = count;
+                bbox.x1 = roundf((stride * row + 1) / scale);
+                bbox.y1 = roundf((stride * col + 1) / scale);
+                bbox.x2 = roundf((stride * row + 1 + cellsize) / scale);
+                bbox.y2 = roundf((stride * col + 1 + cellsize) / scale);
+                bbox.exist = 1;
+                bbox.area = (bbox.x2 - bbox.x1) * (bbox.y2 - bbox.y1);
+                for (size_t channel = 0; channel < 4; channel++)
+                    bbox.regreCoord[channel] = *(
+                            plocal + channel * location->mat.numCols * location->mat.numRows);
+                vector_Bbox_push_back(&pnet->boundingBox, bbox);
+                vector_orderScore_push_back(&pnet->bboxScore, order);
+                count++;
+            }
+            p++;
+            plocal++;
+        }
+    }
 }
 
-void InitRnet(struct Rnet* rnet)
-{
-	rnet->Rthreshold = 0.7;
+void InitRnet(struct Rnet *rnet) {
+    rnet->Rthreshold = 0.7;
 
-	rnet->rgb = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->conv1_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->conv1_out = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->pooling1_out = (struct Mat*)malloc(sizeof(struct Mat));
+    rnet->rgb = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->conv1_matrix = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->conv1_out = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->pooling1_out = (struct Mat *)malloc(sizeof(struct Mat));
 
-	rnet->conv2_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->conv2_out = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->pooling2_out = (struct Mat*)malloc(sizeof(struct Mat));
+    rnet->conv2_matrix = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->conv2_out = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->pooling2_out = (struct Mat *)malloc(sizeof(struct Mat));
 
-	rnet->conv3_matrix = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->conv3_out = (struct Mat*)malloc(sizeof(struct Mat));
+    rnet->conv3_matrix = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->conv3_out = (struct Mat *)malloc(sizeof(struct Mat));
 
-	rnet->fc4_out = (struct Mat*)malloc(sizeof(struct Mat));
+    rnet->fc4_out = (struct Mat *)malloc(sizeof(struct Mat));
 
-	rnet->score = (struct Mat*)malloc(sizeof(struct Mat));
-	rnet->location = (struct Mat*)malloc(sizeof(struct Mat));
+    rnet->score = (struct Mat *)malloc(sizeof(struct Mat));
+    rnet->location = (struct Mat *)malloc(sizeof(struct Mat));
 
-	rnet->conv1_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	rnet->prelu1 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	rnet->conv2_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	rnet->prelu2 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	rnet->conv3_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	rnet->prelu3 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	rnet->fc4_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	rnet->prelu4 = (struct pRelu*)malloc(sizeof(struct pRelu));
-	rnet->score_wb = (struct Weight*)malloc(sizeof(struct Weight));
-	rnet->location_wb = (struct Weight*)malloc(sizeof(struct Weight));
+    rnet->conv1_wb = (struct Weight *)malloc(sizeof(struct Weight));
+    rnet->prelu1 = (struct pRelu *)malloc(sizeof(struct pRelu));
+    rnet->conv2_wb = (struct Weight *)malloc(sizeof(struct Weight));
+    rnet->prelu2 = (struct pRelu *)malloc(sizeof(struct pRelu));
+    rnet->conv3_wb = (struct Weight *)malloc(sizeof(struct Weight));
+    rnet->prelu3 = (struct pRelu *)malloc(sizeof(struct pRelu));
+    rnet->fc4_wb = (struct Weight *)malloc(sizeof(struct Weight));
+    rnet->prelu4 = (struct pRelu *)malloc(sizeof(struct pRelu));
+    rnet->score_wb = (struct Weight *)malloc(sizeof(struct Weight));
+    rnet->location_wb = (struct Weight *)malloc(sizeof(struct Weight));
 
-	long conv1_out = InitConvAndFc(rnet->conv1_wb, 28, 3, 3, 1, 0);
-	InitpRelu(rnet->prelu1, 28);
-	long conv2_out = InitConvAndFc(rnet->conv2_wb, 48, 28, 3, 1, 0);
-	InitpRelu(rnet->prelu2, 48);
-	long conv3_out = InitConvAndFc(rnet->conv3_wb, 64, 48, 2, 1, 0);
-	InitpRelu(rnet->prelu3, 64);
-	long fc4 = InitConvAndFc(rnet->fc4_wb, 128, 576, 1, 1, 0);
-	InitpRelu(rnet->prelu4, 128);
-	long score = InitConvAndFc(rnet->score_wb, 2, 128, 1, 1, 0);
-	long location = InitConvAndFc(rnet->location_wb, 4, 128, 1, 1, 0);
-	long dataNumber[16] = { conv1_out,28,28, conv2_out,48,48, conv3_out,64,64, fc4,128,128, score,2, location,4 };
-	float* pointTeam[16] = { rnet->conv1_wb->pdata, rnet->conv1_wb->pbias, rnet->prelu1->pdata,
-							rnet->conv2_wb->pdata, rnet->conv2_wb->pbias, rnet->prelu2->pdata,
-							rnet->conv3_wb->pdata, rnet->conv3_wb->pbias, rnet->prelu3->pdata,
-							rnet->fc4_wb->pdata, rnet->fc4_wb->pbias, rnet->prelu4->pdata,
-							rnet->score_wb->pdata, rnet->score_wb->pbias,
-							rnet->location_wb->pdata, rnet->location_wb->pbias
-	};
-	char filename[9] = "Rnet.txt";
-	ReadData(filename, dataNumber, pointTeam);
+    long conv1_out = InitConvAndFc(rnet->conv1_wb, 28, 3, 3, 1, 0);
+    InitpRelu(rnet->prelu1, 28);
+    long conv2_out = InitConvAndFc(rnet->conv2_wb, 48, 28, 3, 1, 0);
+    InitpRelu(rnet->prelu2, 48);
+    long conv3_out = InitConvAndFc(rnet->conv3_wb, 64, 48, 2, 1, 0);
+    InitpRelu(rnet->prelu3, 64);
+    long fc4 = InitConvAndFc(rnet->fc4_wb, 128, 576, 1, 1, 0);
+    InitpRelu(rnet->prelu4, 128);
+    long score = InitConvAndFc(rnet->score_wb, 2, 128, 1, 1, 0);
+    long location = InitConvAndFc(rnet->location_wb, 4, 128, 1, 1, 0);
+    long dataNumber[16] = {conv1_out, 28, 28,       conv2_out, 48,  48,
+                           conv3_out, 64, 64,       fc4,       128, 128,
+                           score,     2,  location, 4};
+    float *pointTeam[16] = {
+            rnet->conv1_wb->pdata,   rnet->conv1_wb->pbias, rnet->prelu1->pdata,
+            rnet->conv2_wb->pdata,   rnet->conv2_wb->pbias, rnet->prelu2->pdata,
+            rnet->conv3_wb->pdata,   rnet->conv3_wb->pbias, rnet->prelu3->pdata,
+            rnet->fc4_wb->pdata,     rnet->fc4_wb->pbias,   rnet->prelu4->pdata,
+            rnet->score_wb->pdata,   rnet->score_wb->pbias, rnet->location_wb->pdata,
+            rnet->location_wb->pbias};
+    char filename[9] = "Rnet.txt";
+    ReadData(filename, dataNumber, pointTeam);
 
-	RnetImage2MatrixInit(rnet->rgb);
-	Im2colInit(rnet->rgb, rnet->conv1_matrix, rnet->conv1_wb);
-	ConvolutionInit(rnet->conv1_wb, rnet->rgb, rnet->conv1_out, rnet->conv1_matrix);
-	MaxPoolingInit(rnet->conv1_out, rnet->pooling1_out, 3, 2);
-	Im2colInit(rnet->pooling1_out, rnet->conv2_matrix, rnet->conv2_wb);
-	ConvolutionInit(rnet->conv2_wb, rnet->pooling1_out, rnet->conv2_out, rnet->conv2_matrix);
-	MaxPoolingInit(rnet->conv2_out, rnet->pooling2_out, 3, 2);
-	Im2colInit(rnet->pooling2_out, rnet->conv3_matrix, rnet->conv3_wb);
-	ConvolutionInit(rnet->conv3_wb, rnet->pooling2_out, rnet->conv3_out, rnet->conv3_matrix);
-	FullconnectInit(rnet->fc4_wb, rnet->fc4_out);
-	FullconnectInit(rnet->score_wb, rnet->score);
-	FullconnectInit(rnet->location_wb, rnet->location);
+    RnetImage2MatrixInit(rnet->rgb);
+    Im2colInit(rnet->rgb, rnet->conv1_matrix, rnet->conv1_wb);
+    ConvolutionInit(rnet->conv1_wb, rnet->rgb, rnet->conv1_out,
+                    rnet->conv1_matrix);
+    MaxPoolingInit(rnet->conv1_out, rnet->pooling1_out, 3, 2);
+    Im2colInit(rnet->pooling1_out, rnet->conv2_matrix, rnet->conv2_wb);
+    ConvolutionInit(rnet->conv2_wb, rnet->pooling1_out, rnet->conv2_out,
+                    rnet->conv2_matrix);
+    MaxPoolingInit(rnet->conv2_out, rnet->pooling2_out, 3, 2);
+    Im2colInit(rnet->pooling2_out, rnet->conv3_matrix, rnet->conv3_wb);
+    ConvolutionInit(rnet->conv3_wb, rnet->pooling2_out, rnet->conv3_out,
+                    rnet->conv3_matrix);
+    FullconnectInit(rnet->fc4_wb, rnet->fc4_out);
+    FullconnectInit(rnet->score_wb, rnet->score);
+    FullconnectInit(rnet->location_wb, rnet->location);
 }
 
-void RunRnet(struct Img* image, struct Rnet* rnet)
-{
-	Image2Matrix(image, rnet->rgb);
+void RunRnet(struct Img *image, struct Rnet *rnet) {
+    Image2Matrix(image, rnet->rgb);
 
 	Im2col(rnet->rgb, rnet->conv1_matrix, rnet->conv1_wb);
 	Convolution(rnet->conv1_wb, rnet->rgb, rnet->conv1_out, rnet->conv1_matrix);
@@ -467,6 +478,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 		vector_orderScore_clear(&mtcnn->simpleFace[i].bboxScore);
 	}
 
+
 	//the first stage's Nms
 	if (count < 1) return;
 	Nms(&mtcnn->firstBbox, &mtcnn->firstOrderScore, mtcnn->nms_threshold[0],'u');
@@ -483,7 +495,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 			RectInit(&temp, t->y1, t->x1, t->y2 - t->y1, t->x2 - t->x1);
 			struct Img secImage, imgTemp;
 			CutPicture(image, &imgTemp, temp);
-			Resize(&imgTemp, &secImage, 24, 24);
+			Resize(&imgTemp, &secImage, 48, 96);
 			RunRnet(&secImage, &mtcnn->refineNet);
 			if (*(mtcnn->refineNet.score->mat.pData+1)>mtcnn->refineNet.Rthreshold)
 			{
@@ -516,7 +528,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 			RectInit(&tempRect, t->y1, t->x1, t->y2 - t->y1, t->x2 - t->x1);
 			struct Img tempImg, thirdImage;
 			CutPicture(image, &tempImg, tempRect);
-			Resize(&tempImg, &thirdImage, 48, 48);
+			Resize(&tempImg, &thirdImage, 36, 72);
 			RunOnet(&thirdImage, &mtcnn->outNet);
 			float* pp = NULL;
 			if (*(mtcnn->outNet.score->mat.pData+1)>mtcnn->outNet.Othreshold)

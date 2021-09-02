@@ -47,36 +47,34 @@ void Im2col(struct Mat* input, struct Mat* matrix, struct Weight* weight)
 
 	for (int channel = input->channel; channel--; pi += channel_size)
 	{
-		/*第二个和第三个for循环表示了输出单通道矩阵的某一列，同时体现了输出单通道矩阵的行数*/
 		for (int kernel_row = 0; kernel_row < weight->kernelSize; kernel_row++)
 		{
 			for (int kernel_col = 0; kernel_col < weight->kernelSize; kernel_col++)
 			{
-				int input_row = -weight->pad + kernel_row;//在这里找到卷积核中的某一行在输入图像中的第一个操作区域的行索引
-				/*第四个和第五个for循环表示了输出单通道矩阵的某一行，同时体现了输出单通道矩阵的列数*/
+				int input_row = -weight->pad + kernel_row;
 				for (int output_rows = output_h; output_rows; output_rows--)
 				{
 					if (!IS_A_GE_ZERO_AND_A_LT_B(input_row, input->mat.numRows))
-					{//如果计算得到的输入图像的行值索引小于零或者大于输入图像的高(该行为pad)
+					{
 						for (int output_cols = output_w; output_cols; output_cols--)
 						{
-							*(p++) = 0;//那么将该行在输出的矩阵上的位置置为0
+							*(p++) = 0;
 						}
 					}
 					else
 					{
-						int input_col = -weight->pad + kernel_col;//在这里找到卷积核中的某一列在输入图像中的第一个操作区域的列索引
+						int input_col = -weight->pad + kernel_col;
 						for (int output_col = output_w; output_col; output_col--) {
-							if (IS_A_GE_ZERO_AND_A_LT_B(input_col, input->mat.numCols)) {//如果计算得到的输入图像的列值索引大于等于于零或者小于输入图像的宽(该列不是pad)
-								*(p++) = pi[input_row * input->mat.numCols + input_col];//将输入特征图上对应的区域放到输出矩阵上
+							if (IS_A_GE_ZERO_AND_A_LT_B(input_col, input->mat.numCols)) {
+								*(p++) = pi[input_row * input->mat.numCols + input_col];
 							}
-							else {//否则，计算得到的输入图像的列值索引小于零或者大于输入图像的宽(该列为pad)
-								*(p++) = 0;//将该行该列在输出矩阵上的位置置为0
+							else {
+								*(p++) = 0;
 							}
-							input_col += weight->stride;//按照宽方向步长遍历卷积核上固定列在输入图像上滑动操作的区域
+							input_col += weight->stride;
 						}
 					}
-					input_row += weight->stride;//按照高方向步长遍历卷积核上固定行在输入图像上滑动操作的区域
+					input_row += weight->stride;
 				}
 			}
 		}
