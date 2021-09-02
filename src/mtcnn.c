@@ -457,6 +457,8 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 {
 	struct orderScore order;
 	int count = 0;
+	// doing detection in each scale
+	// https://jkjung-avt.github.io/optimize-mtcnn/
 	for (size_t i = 0; i < mtcnn->scales->size; i++)
 	{
 		int changedH = (int)ceil(image->rows * mtcnn->scales->data[i]);
