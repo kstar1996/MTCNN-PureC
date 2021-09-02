@@ -6,12 +6,11 @@ The project is a MTCNN face detection based on C. To implement MTCNN in MCU, the
 The input data is a RGB CHW txt, and output is the keypoints of face and bounding box of face.
 
 
-This project is the C implementation of MTCNN, no dependent library, mainly written for the MCU of the arm platform, and can be accelerated by the [ARM-CMSIS-DSP](https://github.com/ARM-software/CMSIS_5) library during deployment For matrix multiplication operations, please refer to the official documentation.
-
 This project simplified `arm_math.h` and `arm_mat_mult_f32.c` while keeping the API unchanged, so as to run on the PC platform.
 
 
-The input is a text file in RGB CHW format, and the output is the face bounding box and face key points.
+
+This input is a text file in RGB CHW format, and the output is the face bounding box and face key points.
 
 ## Usage
 ```shell
@@ -52,7 +51,4 @@ np.savetxt('input1.txt', img_.reshape(-1), "%d")
 
 ## Implement Details
 The project mainly refers to [MTCNN-light](https://github.com/AlphaQi/MTCNN-light) and remove OpenCV and OpenBLAS dependencies.      
-Convolution is implemented by im2col and matrix multiplication.  
-
-
-This project mainly refers to [MTCNN-light](https://github.com/AlphaQi/MTCNN-light), and removes OpenCV and OpenBLAS dependencies.
+Convolution is implemented by im2col and matrix multiplication.
