@@ -5,15 +5,15 @@
 #include "mtcnn.h"
 #include "time.h"
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 72
+#define HEIGHT 144
 #define CHANNEL 3
 
 void getInput(struct Img* image);
 
 void getInput(struct Img* image)
 {
-	FILE* fp = fopen("input1.txt", "r");
+	FILE* fp = fopen("input2.txt", "r");
 	//FILE* fp = fopen("input2.txt", "r");
 	image->pdata = (unsigned char*)malloc(sizeof(unsigned char) * WIDTH * HEIGHT * CHANNEL);
 	image->cols = WIDTH;

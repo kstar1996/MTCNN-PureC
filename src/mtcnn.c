@@ -41,6 +41,9 @@ void InitPnet(struct Pnet *pnet) {
     pnet->conv4c1_wb = (struct Weight *) malloc(sizeof(struct Weight));
     pnet->conv4c2_wb = (struct Weight *) malloc(sizeof(struct Weight));
 
+    // the image pyramid should go before the part below
+    // long InitConvAndFc(struct Weight* weight, int schannel, int lchannel, int kersize, int stride, int pad)
+
     long conv1_out = InitConvAndFc(pnet->conv1_wb, 10, 3, 3, 1, 0);
     InitpRelu(pnet->prelu1, 10);
     long conv2_out = InitConvAndFc(pnet->conv2_wb, 16, 10, 3, 1, 0);
@@ -495,7 +498,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 			RectInit(&temp, t->y1, t->x1, t->y2 - t->y1, t->x2 - t->x1);
 			struct Img secImage, imgTemp;
 			CutPicture(image, &imgTemp, temp);
-			Resize(&imgTemp, &secImage, 48, 96);
+			Resize(&imgTemp, &secImage, 24, 24);
 			RunRnet(&secImage, &mtcnn->refineNet);
 			if (*(mtcnn->refineNet.score->mat.pData+1)>mtcnn->refineNet.Rthreshold)
 			{
@@ -528,7 +531,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 			RectInit(&tempRect, t->y1, t->x1, t->y2 - t->y1, t->x2 - t->x1);
 			struct Img tempImg, thirdImage;
 			CutPicture(image, &tempImg, tempRect);
-			Resize(&tempImg, &thirdImage, 36, 72);
+			Resize(&tempImg, &thirdImage, 48, 48);
 			RunOnet(&thirdImage, &mtcnn->outNet);
 			float* pp = NULL;
 			if (*(mtcnn->outNet.score->mat.pData+1)>mtcnn->outNet.Othreshold)
