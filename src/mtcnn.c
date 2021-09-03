@@ -436,6 +436,8 @@ void InitMtcnn(struct Mtcnn* network, int row, int col)
 	// https://github.com/davidsandberg/facenet/blob/master/src/align/detect_face.py
 
 	// code for creating scale pyramid
+	// this has to be deleted.
+	/**
 	while (minl > MIN_DET_SIZE)
 	{
 		if (factor_count > 0)
@@ -446,8 +448,15 @@ void InitMtcnn(struct Mtcnn* network, int row, int col)
 		minl *= factor;
 		factor_count++;
 	}
+	**/
 
-	network->simpleFace = (struct Pnet*)malloc(sizeof(struct Pnet) * network->scales->size);
+	// we don't need a scale pyramid so
+	vector_float_push_back(network->scales, (1/2));
+    vector_float_push_back(network->scales, (2/3));
+
+
+    network->simpleFace = (struct Pnet*)malloc(sizeof(struct Pnet) * network->scales->size);
+
 	for (size_t i = 0; i < network->scales->size; i++)
 	{
 		InitPnet(&network->simpleFace[i]);
