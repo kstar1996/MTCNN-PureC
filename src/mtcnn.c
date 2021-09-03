@@ -432,6 +432,10 @@ void InitMtcnn(struct Mtcnn* network, int row, int col)
 	vector_Bbox_init(&network->thirdBbox);
 	vector_orderScore_init(&network->thirdOrderScore);
 
+	// the python code
+	// https://github.com/davidsandberg/facenet/blob/master/src/align/detect_face.py
+
+	// code for creating scale pyramid
 	while (minl > MIN_DET_SIZE)
 	{
 		if (factor_count > 0)
@@ -457,6 +461,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 {
 	struct orderScore order;
 	int count = 0;
+	// first stage
 	// doing detection in each scale
 	// https://jkjung-avt.github.io/optimize-mtcnn/
 	for (size_t i = 0; i < mtcnn->scales->size; i++)
