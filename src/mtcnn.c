@@ -455,7 +455,12 @@ void InitMtcnn(struct Mtcnn* network, int row, int col)
     vector_float_push_back(network->scales, (2/3));
 
 
+    // network->scales->data = 1/2;
+    // network->scales->data = 2/3;
+
+
     network->simpleFace = (struct Pnet*)malloc(sizeof(struct Pnet) * network->scales->size);
+    printf("%d", &(network->scales->size));
 
 	for (size_t i = 0; i < network->scales->size; i++)
 	{
@@ -466,13 +471,13 @@ void InitMtcnn(struct Mtcnn* network, int row, int col)
 	InitOnet(&network->outNet);
 }
 
+// doing detection in each scale
+// https://jkjung-avt.github.io/optimize-mtcnn/
 void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 {
 	struct orderScore order;
 	int count = 0;
-	// first stage
-	// doing detection in each scale
-	// https://jkjung-avt.github.io/optimize-mtcnn/
+	// first stage: fast proposal network (pnet) to obtain face candidates
 	for (size_t i = 0; i < mtcnn->scales->size; i++)
 	{
 		int changedH = (int)ceil(image->rows * mtcnn->scales->data[i]);
@@ -503,7 +508,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 	Nms(&mtcnn->firstBbox, &mtcnn->firstOrderScore, mtcnn->nms_threshold[0],'u');
 	RefineAndSquareBbox(&mtcnn->firstBbox, image->rows, image->cols);
 
-	//second stage
+	// second stage - refinement of face candidates with rnet
 	count = 0;
 	for (size_t i = 0; i < mtcnn->firstBbox.size; i++)
 	{
@@ -536,7 +541,7 @@ void FindFace(struct Img* image, struct Mtcnn* mtcnn)
 	Nms(&mtcnn->secondBbox, &mtcnn->secondOrderScore, mtcnn->nms_threshold[1],'u');
 	RefineAndSquareBbox(&mtcnn->secondBbox, image->rows, image->cols);
 
-	//third stage
+	// third stage - further refinement and facial landmarks positions with onet
 	count = 0;
 	for (size_t i = 0; i < mtcnn->secondBbox.size; i++)
 	{

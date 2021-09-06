@@ -14,7 +14,7 @@ void getInput(struct Img* image);
 void getInput(struct Img* image)
 {
 	FILE* fp = fopen("input2.txt", "r");
-	//FILE* fp = fopen("input2.txt", "r");
+	//FILE* fp = fopen("input1.txt", "r");
 	image->pdata = (unsigned char*)malloc(sizeof(unsigned char) * WIDTH * HEIGHT * CHANNEL);
 	image->cols = WIDTH;
 	image->rows = HEIGHT;
