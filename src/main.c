@@ -14,6 +14,6 @@ int main()
 	end = clock();
 
 	printf("time is %fms\n", (end - start) * 1.0 / CLOCKS_PER_SEC * 1000);
-
+	
 	return 0;
 }

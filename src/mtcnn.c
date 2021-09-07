@@ -470,6 +470,15 @@ void FindFace(struct Img *image, struct Mtcnn *mtcnn) {
     RunPnet(mtcnn->reImage, mtcnn->scales->data[i], &mtcnn->simpleFace[i]);
     Nms(&mtcnn->simpleFace[i].boundingBox, &mtcnn->simpleFace[i].bboxScore,
         mtcnn->simpleFace[i].nms_threshold, 'u');
+    // printf("changedW: %d, changedH: %d\n", changedW, changedH);
+    // printf("re image: %d, %d, %d\n", mtcnn->reImage->cols, mtcnn->reImage->rows, mtcnn->reImage->dims);
+    // printf("conv1_out row/col/chan: %d, %d, %d\n", mtcnn->simpleFace[i].conv1_out->mat.numRows, mtcnn->simpleFace[i].conv1_out->mat.numCols, mtcnn->simpleFace[i].conv1_out->channel);
+    // printf("MP1_out row/col/chan: %d, %d, %d\n", mtcnn->simpleFace[i].maxPooling1->mat.numRows, mtcnn->simpleFace[i].maxPooling1->mat.numCols, mtcnn->simpleFace[i].maxPooling1->channel);
+    // printf("conv2_out row/col/chan: %d, %d, %d\n", mtcnn->simpleFace[i].conv2_out->mat.numRows, mtcnn->simpleFace[i].conv2_out->mat.numCols, mtcnn->simpleFace[i].conv2_out->channel);
+    // printf("conv3_out row/col/chan: %d, %d, %d\n", mtcnn->simpleFace[i].conv3_out->mat.numRows, mtcnn->simpleFace[i].conv3_out->mat.numCols, mtcnn->simpleFace[i].conv3_out->channel);
+    // printf("face classification row/col/chan: %d, %d, %d\n", mtcnn->simpleFace[i].score->mat.numRows, mtcnn->simpleFace[i].score->mat.numCols, mtcnn->simpleFace[i].score->channel);
+    // printf("bbox reg row/col/chan: %d, %d, %d\n\n", mtcnn->simpleFace[i].location->mat.numRows, mtcnn->simpleFace[i].location->mat.numCols, mtcnn->simpleFace[i].location->channel);
+    
 
     for (int j = 0; j < mtcnn->simpleFace[i].boundingBox.size; j++) {
       if (mtcnn->simpleFace[i].boundingBox.data[j].exist) {
@@ -484,100 +493,104 @@ void FindFace(struct Img *image, struct Mtcnn *mtcnn) {
     vector_Bbox_clear(&mtcnn->simpleFace[i].boundingBox);
     vector_orderScore_clear(&mtcnn->simpleFace[i].bboxScore);
   }
+  // printf("src image: %d, %d, %d\n", image->cols, image->rows, image->dims);
 
   // print PNet weight & bias
-  fputs("PNet==============================================\n", fp);
-  fputs("\nPNet conv1 weight\n", fp);
-  int conv1_ksize = mtcnn->simpleFace->conv1_wb->kernelSize;
-  for (int i = 0; mtcnn->simpleFace->conv1_wb->pdata[i] != 0; i++) {
-    if(i%(conv1_ksize*conv1_ksize)==0) fprintf(fp, "\n%d\n", i/(conv1_ksize*conv1_ksize));
-    fprintf(fp, "%f\t", mtcnn->simpleFace->conv1_wb->pdata[i]);
-    if((i+1)%conv1_ksize==0) fprintf(fp, "\n");
-  }
-  fprintf(fp, "\nPNet conv1 bias\n");
-	for (int i = 0; mtcnn->simpleFace->conv1_wb->pbias[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv1_wb->pbias[i]);
-  }
-  fprintf(fp, "\nPNet PReLU1 weight\n");
-  for (int i = 0; mtcnn->simpleFace->prelu1->pdata[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->prelu1->pdata[i]);
-  }
+  // fputs("PNet==============================================\n", fp);
+  // fputs("\nPNet conv1 weight\n", fp);
+  // int conv1_ksize = mtcnn->simpleFace->conv1_wb->kernelSize;
+  // for (int i = 0; mtcnn->simpleFace->conv1_wb->pdata[i] != 0; i++) {
+  //   if(i%(conv1_ksize*conv1_ksize)==0) fprintf(fp, "\n%d\n", i/(conv1_ksize*conv1_ksize));
+  //   fprintf(fp, "%f\t", mtcnn->simpleFace->conv1_wb->pdata[i]);
+  //   if((i+1)%conv1_ksize==0) fprintf(fp, "\n");
+  // }
+  // fprintf(fp, "\nPNet conv1 bias\n");
+	// for (int i = 0; mtcnn->simpleFace->conv1_wb->pbias[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv1_wb->pbias[i]);
+  // }
+  // fprintf(fp, "\nPNet PReLU1 weight\n");
+  // for (int i = 0; mtcnn->simpleFace->prelu1->pdata[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->prelu1->pdata[i]);
+  // }
 
-  fprintf(fp, "\nPNet conv2 weight\n");
-  int conv2_ksize = mtcnn->simpleFace->conv2_wb->kernelSize;
-	for (int i = 0; mtcnn->simpleFace->conv2_wb->pdata[i] != 0; i++) {
-    if(i%(conv2_ksize*conv2_ksize)==0) fprintf(fp, "\n%d\n",i/(conv2_ksize*conv2_ksize));
-    fprintf(fp, "%f\t", mtcnn->simpleFace->conv2_wb->pdata[i]);
-    if((i+1)%conv2_ksize==0) fprintf(fp, "\n");
-  }
-  fprintf(fp, "\nPNet conv2 bias\n");
-	for (int i = 0; mtcnn->simpleFace->conv2_wb->pbias[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv2_wb->pbias[i]);
-  }
-  fprintf(fp, "\nPNet PReLU2 weight\n");
-  for (int i = 0; mtcnn->simpleFace->prelu2->pdata[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->prelu2->pdata[i]);
-  }
+  // fprintf(fp, "\nPNet conv2 weight\n");
+  // int conv2_ksize = mtcnn->simpleFace->conv2_wb->kernelSize;
+	// for (int i = 0; mtcnn->simpleFace->conv2_wb->pdata[i] != 0; i++) {
+  //   if(i%(conv2_ksize*conv2_ksize)==0) fprintf(fp, "\n%d\n",i/(conv2_ksize*conv2_ksize));
+  //   fprintf(fp, "%f\t", mtcnn->simpleFace->conv2_wb->pdata[i]);
+  //   if((i+1)%conv2_ksize==0) fprintf(fp, "\n");
+  // }
+  // fprintf(fp, "\nPNet conv2 bias\n");
+	// for (int i = 0; mtcnn->simpleFace->conv2_wb->pbias[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv2_wb->pbias[i]);
+  // }
+  // fprintf(fp, "\nPNet PReLU2 weight\n");
+  // for (int i = 0; mtcnn->simpleFace->prelu2->pdata[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->prelu2->pdata[i]);
+  // }
 
-  fprintf(fp, "\nPNet conv3 weight\n");
-  int conv3_ksize = mtcnn->simpleFace->conv3_wb->kernelSize;
-	for (int i = 0; mtcnn->simpleFace->conv3_wb->pdata[i] != 0; i++) {
-    if(i%(conv3_ksize*conv3_ksize)==0) fprintf(fp, "\n%d\n",i/(conv3_ksize*conv3_ksize));
-    fprintf(fp, "%f\t", mtcnn->simpleFace->conv3_wb->pdata[i]);
-    if((i+1)%conv3_ksize==0) fprintf(fp, "\n");
-  }
-  fprintf(fp, "\nPNet conv3 bias\n");
-	for (int i = 0; mtcnn->simpleFace->conv3_wb->pbias[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv3_wb->pbias[i]);
-  }
-  fprintf(fp, "\nPNet PReLU3 weight\n");
-  for (int i = 0; mtcnn->simpleFace->prelu3->pdata[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->prelu3->pdata[i]);
-  }
+  // fprintf(fp, "\nPNet conv3 weight\n");
+  // int conv3_ksize = mtcnn->simpleFace->conv3_wb->kernelSize;
+	// for (int i = 0; mtcnn->simpleFace->conv3_wb->pdata[i] != 0; i++) {
+  //   if(i%(conv3_ksize*conv3_ksize)==0) fprintf(fp, "\n%d\n",i/(conv3_ksize*conv3_ksize));
+  //   fprintf(fp, "%f\t", mtcnn->simpleFace->conv3_wb->pdata[i]);
+  //   if((i+1)%conv3_ksize==0) fprintf(fp, "\n");
+  // }
+  // fprintf(fp, "\nPNet conv3 bias\n");
+	// for (int i = 0; mtcnn->simpleFace->conv3_wb->pbias[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv3_wb->pbias[i]);
+  // }
+  // fprintf(fp, "\nPNet PReLU3 weight\n");
+  // for (int i = 0; mtcnn->simpleFace->prelu3->pdata[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->prelu3->pdata[i]);
+  // }
 
-  fprintf(fp, "\nPNet conv4-1 weight(face classification)\n");
-  int conv4_1_ksize = mtcnn->simpleFace->conv4c1_wb->kernelSize;
-	for (int i = 0; mtcnn->simpleFace->conv4c1_wb->pdata[i] != 0; i++) {
-    if(i%(conv4_1_ksize*conv4_1_ksize)==0) fprintf(fp, "\n%d\n",i/(conv4_1_ksize*conv4_1_ksize));
-    fprintf(fp, "%f\t", mtcnn->simpleFace->conv4c1_wb->pdata[i]);
-    if((i+1)%conv4_1_ksize==0) fprintf(fp, "\n");
-  }
-  fprintf(fp, "\nPNet conv4-1 bias\n");
-	for (int i = 0; mtcnn->simpleFace->conv4c1_wb->pbias[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv4c1_wb->pbias[i]);
-  }
+  // fprintf(fp, "\nPNet conv4-1 weight(face classification)\n");
+  // int conv4_1_ksize = mtcnn->simpleFace->conv4c1_wb->kernelSize;
+	// for (int i = 0; mtcnn->simpleFace->conv4c1_wb->pdata[i] != 0; i++) {
+  //   if(i%(conv4_1_ksize*conv4_1_ksize)==0) fprintf(fp, "\n%d\n",i/(conv4_1_ksize*conv4_1_ksize));
+  //   fprintf(fp, "%f\t", mtcnn->simpleFace->conv4c1_wb->pdata[i]);
+  //   if((i+1)%conv4_1_ksize==0) fprintf(fp, "\n");
+  // }
+  // fprintf(fp, "\nPNet conv4-1 bias\n");
+	// for (int i = 0; mtcnn->simpleFace->conv4c1_wb->pbias[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv4c1_wb->pbias[i]);
+  // }
 
-  fprintf(fp, "\nPNet conv4-2 weight(bounding box regression)\n");
-  int conv4_2_ksize = mtcnn->simpleFace->conv4c2_wb->kernelSize;
-	for (int i = 0; mtcnn->simpleFace->conv4c2_wb->pdata[i] != 0; i++) {
-    if(i%(conv4_2_ksize*conv4_2_ksize)==0) fprintf(fp, "\n%d\n",i/(conv4_2_ksize*conv4_2_ksize));
-    fprintf(fp, "%f\t", mtcnn->simpleFace->conv4c2_wb->pdata[i]);
-    if((i+1)%conv4_2_ksize==0) fprintf(fp, "\n");
-  }
-  fprintf(fp, "\nPNet conv4-2 bias\n");
-	for (int i = 0; mtcnn->simpleFace->conv4c2_wb->pbias[i] != 0; i++) {
-    fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv4c2_wb->pbias[i]);
-  }
+  // fprintf(fp, "\nPNet conv4-2 weight(bounding box regression)\n");
+  // int conv4_2_ksize = mtcnn->simpleFace->conv4c2_wb->kernelSize;
+	// for (int i = 0; mtcnn->simpleFace->conv4c2_wb->pdata[i] != 0; i++) {
+  //   if(i%(conv4_2_ksize*conv4_2_ksize)==0) fprintf(fp, "\n%d\n",i/(conv4_2_ksize*conv4_2_ksize));
+  //   fprintf(fp, "%f\t", mtcnn->simpleFace->conv4c2_wb->pdata[i]);
+  //   if((i+1)%conv4_2_ksize==0) fprintf(fp, "\n");
+  // }
+  // fprintf(fp, "\nPNet conv4-2 bias\n");
+	// for (int i = 0; mtcnn->simpleFace->conv4c2_wb->pbias[i] != 0; i++) {
+  //   fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv4c2_wb->pbias[i]);
+  // }
 
-  fprintf(fp, "\nPNet conv1 Featuremap\n");
+  // fprintf(fp, "\nPNet conv1 Featuremap\n");
   // printf("\nPNet conv1 Featuremap\n");
   // int conv1_out_row = mtcnn->simpleFace->conv1_out->mat.numRows;
   // int conv1_out_col = mtcnn->simpleFace->conv1_out->mat.numCols;
   // int conv1_out_channel = mtcnn->simpleFace->conv1_out->channel;
+  // printf("%d\n", conv1_out_row);
+  // printf("%d\n", conv1_out_col);
+  // printf("%d\n", conv1_out_channel);
   // for(int i =0; i<conv1_out_row*conv1_out_col*conv1_out_channel; i++){
-  //   if(i%100==0) fprintf(fp, "\n%d\n", i/(conv1_out_row*conv1_out_col));
-  //   fprintf(fp, "%f\t", mtcnn->simpleFace->conv1_out->mat.pData[i]);
-  //   // printf("%f\t", mtcnn->simpleFace->conv1_out->mat.pData[i]);
-  //   if((i+1)%10==0) fprintf(fp, "\n");
+    // if(i%100==0) fprintf(fp, "\n%d\n", i/(conv1_out_row*conv1_out_col));
+    // fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv1_out->mat.pData[i]);
+    // printf("%f\t", mtcnn->simpleFace->conv1_out->mat.pData[i]);
+    // if((i+1)%10==0) fprintf(fp, "\n");
   // }
-  int conv1_mat_row = mtcnn->simpleFace->conv1_matrix->mat.numRows;
-  int conv1_mat_col = mtcnn->simpleFace->conv1_matrix->mat.numCols;
-  int conv1_mat_channel = mtcnn->simpleFace->conv1_matrix->channel;
-  for(int i=0; i<conv1_mat_row*conv1_mat_col*conv1_mat_channel; i++){
-    if(i%100==0) fprintf(fp, "\n%d\n", i/(conv1_mat_row*conv1_mat_col));
-    fprintf(fp, "%f\t", mtcnn->simpleFace->conv1_matrix->mat.pData[i]);
-    if((i+1)%10==0) fprintf(fp, "\n");
-  }
+  // int conv1_mat_row = mtcnn->simpleFace->conv1_matrix->mat.numRows;
+  // int conv1_mat_col = mtcnn->simpleFace->conv1_matrix->mat.numCols;
+  // int conv1_mat_channel = mtcnn->simpleFace->conv1_matrix->channel;
+  // for(int i=0; i<conv1_mat_row*conv1_mat_col*conv1_mat_channel; i++){
+    // if(i%100==0) fprintf(fp, "\n%d\n", i/(conv1_mat_row*conv1_mat_col));
+    // fprintf(fp, "%d: %f\n", i, mtcnn->simpleFace->conv1_matrix->mat.pData[i]);
+    // if((i+1)%10==0) fprintf(fp, "\n");
+  // }
 
   // the first stage's Nms
   if (count < 1)
@@ -610,6 +623,15 @@ void FindFace(struct Img *image, struct Mtcnn *mtcnn) {
         mtcnn->firstBbox.data[i].exist = 0;
       }
     }
+    printf("%d\n", i);
+    printf("conv1_out row/col/chan: %d, %d, %d\n", mtcnn->refineNet.conv1_out->mat.numRows, mtcnn->refineNet.conv1_out->mat.numCols, mtcnn->refineNet.conv1_out->channel);
+    printf("MP1_out row/col/chan: %d, %d, %d\n", mtcnn->refineNet.pooling1_out->mat.numRows, mtcnn->refineNet.pooling1_out->mat.numCols, mtcnn->refineNet.pooling1_out->channel);
+    printf("conv2_out row/col/chan: %d, %d, %d\n", mtcnn->refineNet.conv2_out->mat.numRows, mtcnn->refineNet.conv2_out->mat.numCols, mtcnn->refineNet.conv2_out->channel);
+    printf("MP1_out row/col/chan: %d, %d, %d\n", mtcnn->refineNet.pooling2_out->mat.numRows, mtcnn->refineNet.pooling2_out->mat.numCols, mtcnn->refineNet.pooling2_out->channel);
+    printf("conv3_out row/col/chan: %d, %d, %d\n", mtcnn->refineNet.conv3_out->mat.numRows, mtcnn->refineNet.conv3_out->mat.numCols, mtcnn->refineNet.conv3_out->channel);
+    printf("conv3_out row/col/chan: %d, %d, %d\n", mtcnn->refineNet.fc4_out->mat.numRows, mtcnn->refineNet.fc4_out->mat.numCols, mtcnn->refineNet.fc4_out->channel);
+    printf("face classification row/col/chan: %d, %d, %d\n", mtcnn->refineNet.score->mat.numRows, mtcnn->refineNet.score->mat.numCols, mtcnn->refineNet.score->channel);
+    printf("bbox reg row/col/chan: %d, %d, %d\n\n", mtcnn->refineNet.location->mat.numRows, mtcnn->refineNet.location->mat.numCols, mtcnn->refineNet.location->channel);
   }
   // print RNet parameters
 
